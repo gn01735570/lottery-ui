@@ -1,5 +1,5 @@
 export interface Activity {
-  oid ?: string,
+  activityOid ?: string,
   name: string,
   year: string,
   month: string,
@@ -7,6 +7,7 @@ export interface Activity {
   usersCount?: number,
   prizeCount?: number,
   info?: [{
+    prizeId?: string,
     prize?: string,
     quota?: number,
     list?: number[],

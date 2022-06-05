@@ -1,49 +1,57 @@
-
 <nz-modal
   [(nzVisible)]="isVisible"
-  nzTitle="抽獎設定"
+  nzTitle="新增抽獎活動"
+  [nzFooter]="modalFooter"
   (nzOnCancel)="handleCancel()"
-  (nzOnOk)="handleOk()"
 >
-  <ng-container *nzModalContent>
-    <!-- <div>Title:  <input nz-input placeholder="Activity title" [formControl]="title" /></div> -->
-    <!-- <form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()">
-      <nz-form-item *ngFor="let control of listOfControl; let i = index">
-        <nz-form-label [nzXs]="24" [nzSm]="4" *ngIf="i === 0" [nzFor]="control.controlInstance">
-          Passengers
-        </nz-form-label>
-        <nz-form-control
-          [nzXs]="24"
-          [nzSm]="20"
-          [nzOffset]="i === 0 ? 0 : 4"
-          nzErrorTip="Please input passenger's name or delete this field."
-        >
-          <input
-            class="passenger-input"
-            nz-input
-            placeholder="placeholder"
-            [attr.id]="control.id"
-            [formControlName]="control.controlInstance"
-          />
-          <i nz-icon nzType="minus-circle-o" class="dynamic-delete-button" (click)="removeField(control, $event)"></i>
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-control [nzXs]="{ span: 24, offset: 0 }" [nzSm]="{ span: 20, offset: 4 }">
-          <button nz-button nzType="dashed" class="add-button" (click)="addField($event)">
-            <i nz-icon nzType="plus"></i>
-            Add field
-          </button>
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-control [nzXs]="{ span: 24, offset: 0 }" [nzSm]="{ span: 20, offset: 4 }">
-          <button nz-button nzType="primary">Submit</button>
-        </nz-form-control>
-      </nz-form-item>
-    </form> -->
 
-    <!-- <div>Title : 尾牙抽獎</div> -->
+<ng-template #modalFooter>
+  <button nz-button nzType="default" (click)="handleCancel()">Cancel</button>
+</ng-template>
+
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="validateForm">
+      Activity name:
+      <div>
+       <input type="text" formControlName="name" required />
+      </div>
+      Year:
+      <div> <input type="text" formControlName="year" required/></div>
+      Month:
+      <div
+        > <input type="text" formControlName="month" required
+      /></div>
+      day:
+      <div>
+       <input type="text" formControlName="day" required
+      /></div>
+      usersCount:
+      <div
+        > <input type="text" formControlName="usersCount" required
+      /></div>
+      prizeCount:
+      <div
+        > <input type="text" formControlName="prizeCount" required
+      /></div>
+      <button nzType="primary" nz-button (click)="createActivity()">新增抽獎活動</button>
+      <nz-divider></nz-divider>
+    </form>
+    <hr/>
+    <div>
+      Activity ID:
+      <div
+        > <input type="text" [formControl]="newActivityId" required
+      /></div>
+      Prize:
+      <div
+        > <input type="text" [formControl]="prize" required
+      /></div>
+      Quota:
+      <div
+        > <input type="text" [formControl]="quota" required
+      /></div>
+      <button [disabled]="this.newActivityId.value == ''" nzType="primary" nz-button (click)="createPrizeInfo()">新增獎項</button>
+    </div>
   </ng-container>
 </nz-modal>
 
@@ -65,17 +73,28 @@
     <input type="text" [formControl]="day" />
   </label>
 
-  <button style="margin-left: 10px;" nz-button nzType="primary" (click)="getActivity()">查詢</button>
-  <label style="margin-right: 20px;">
-    總獎項: {{activity?.prizeCount}}
-  </label>
+  <button
+    style="margin-left: 10px"
+    nz-button
+    nzType="primary"
+    (click)="getActivity()"
+  >
+    查詢
+  </button>
+  <label style="margin-right: 20px"> 總獎項: {{ activity?.prizeCount }} </label>
 
-  <label style="margin-right: 5px;">
-    參加人數: {{activity?.usersCount}}
+  <label style="margin-right: 5px">
+    參加人數: {{ activity?.usersCount }}
   </label>
-  <button style="margin-left: 550px;" nz-button nzType="primary"  (click)="showModal()"><span>抽獎設定</span></button>
+  <button
+    style="margin-left: 550px"
+    nz-button
+    nzType="primary"
+    (click)="showModal()"
+  >
+    <span>新增抽獎活動</span>
+  </button>
 </div>
-
 
 <nz-table #table [nzData]="activity?.info">
   <thead>
@@ -83,19 +102,24 @@
       <th>獎項</th>
       <th>人數</th>
       <th></th>
-      <th>中獎名單</th>
+      <th style="max-width: 300px">中獎名單</th>
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let data of table.data">
+    <tr
+      *ngFor="let data of table.data"
+      style="table-layout: fixed; width: 100%"
+    >
       <td>{{ data.prize }}</td>
       <td>{{ data.quota }}</td>
       <td>
-        <!-- <a>Action 一 {{ data.name }}</a> -->
-        <!-- <nz-divider nzType="vertical"></nz-divider> -->
-       <span (click)="draw()"><a>開始抽獎 </a></span>
+        <span *ngIf="data.list.length < 1" (click)="draw(data)"
+          ><a>開始抽獎 </a></span
+        >
       </td>
-      <td>{{ data?.list }}</td>
+      <td>
+        <span style="max-height: 60px"> {{ data.list }}</span>
+      </td>
     </tr>
   </tbody>
 </nz-table>

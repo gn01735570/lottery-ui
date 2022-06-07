@@ -1,4 +1,5 @@
 # LotteryApp
+GUI抽獎連結: https://ddf8-61-230-75-173.jp.ngrok.io/
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.2.3.
 1. 抽籤頁面: (點擊 - 開始抽籤按鈕，即可抽出該獎項以及顯示中獎人名單，每一次抽獎時間 < 2秒)

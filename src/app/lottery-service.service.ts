@@ -11,30 +11,33 @@ export class LotteryServiceService {
 
   constructor(private http: HttpClient) { }
 
-  getActivity(req: Activity): Observable<Activity> {
-    const url = `${this.lotteryService}/lotterys/activity?name=${req.name}&year=${req.year}&month=${req.month}&day=${req.day}`;
+  getActivityList(): Observable<Activity[]> {
+    const url = `${this.lotteryService}/lotterys/activity/list`;
+    return this.http.get<Activity[]>(url);
+  }
+
+  getActivity(activityOid: string): Observable<Activity> {
+    const url = `${this.lotteryService}/lotterys/activity?activityOid=${activityOid}`;
     return this.http.get<Activity>(url);
   }
 
-  savePrizeEmpls(activityId: string, prizeId: string, emplsId:number[]): Observable<Activity> {
+  savePrizeEmpls(activityId: string, prizeId: string, emplsId:number[], quota: string): Observable<Activity> {
     const url = `${this.lotteryService}/prizeEmpls`;
     let emplsIdList = emplsId.toString();
     const prizeEmpls = {
       actyId: activityId,
       prizeId: prizeId,
       emplsId: emplsIdList,
+      quota: quota,
     }
     console.log('url', url, 'prizeEmpls', prizeEmpls);
     return this.http.post<Activity>(url, prizeEmpls);
   }
 
-  createActivity(name, year, month, day, usersConunt, prizeCount): Observable<Activity> {
+  createActivity(name, usersConunt, prizeCount): Observable<Activity> {
     const url = `${this.lotteryService}/lotterys/activity`
     const req = {
       name:name,
-      year:year,
-      month: month,
-      day: day,
       usersCount: usersConunt,
       prizeCount: prizeCount
     }

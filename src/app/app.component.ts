@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -6,8 +6,11 @@ import {
   Validators,
 } from '@angular/forms';
 import * as _ from 'lodash';
+import { orderBy } from 'lodash';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { Subject } from 'rxjs';
 import { range } from 'rxjs/internal/observable/range';
 import { LotteryServiceService } from './lottery-service.service';
 import { Activity } from './pages/activity';
@@ -18,15 +21,20 @@ import { Activity } from './pages/activity';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  title = new FormControl('');
-  name = new FormControl('尾牙');
-  year = new FormControl('2025');
-  month = new FormControl('12');
-  day = new FormControl('31');
+  @ViewChild('prizeTmpl') prizeTmpl: TemplateRef<{}>;
+  activityList: Activity[];
+  selectedActivity = new FormControl('');
   activity: Activity;
-  candidateList: number[];
+  prizeInfo;
+  candidateList: string[];
   isVisible = false;
-  validateForm!: FormGroup;
+  isCanBeAdded = false;
+  isOpenAddedItem = false;
+  minPrize:number;
+  currentPrize: number;
+
+  newActivityForm!: FormGroup;
+  prizeForm!: FormGroup;
   newActivityId = new FormControl('');
   prize = new FormControl('');
   quota = new FormControl('');
@@ -34,51 +42,107 @@ export class AppComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private lotteryService: LotteryServiceService,
-    private modal: NzModalService  ) {}
+    private modal: NzModalService,
+    private nzMessageService: NzMessageService
+  ) {}
 
   ngOnInit(): void {
-    this.validateForm = this.fb.group({
+    this.getActivityList();
+    this.addActivityCtrlListener();
+    this.newActivityForm = this.fb.group({
       name: [''],
-      year: [''],
-      month: [''],
-      day: [''],
       usersCount: [''],
-      prizeCount: [''],
+      prizeCount: [],
+    });
+
+    this.prizeForm = this.fb.group({
+      prize: [''],
+      quota: [''],
     });
   }
 
-  getActivity() {
-    const req = {
-      name: this.name.value,
-      year: this.year.value,
-      month: this.month.value,
-      day: this.day.value,
-    };
-    this.lotteryService.getActivity(req).subscribe((result) => {
-      this.activity = result;
-      this.candidateList = _.shuffle(_.range(1, 60000));
-    }, (error) => {
+  addActivityCtrlListener() {
+    this.selectedActivity.valueChanges.subscribe((result) => {
+      this.getActivity(result);
+    });
+  }
+
+  getActivityList() {
+    this.lotteryService.getActivityList().subscribe((result) => {
+      this.activityList = result;
+      if (this.newActivityId.value !== '') {
+        this.selectedActivity.setValue(this.newActivityId.value);
+      }
+    });
+  }
+
+  getActivity(activityOid: string) {
+    this.lotteryService.getActivity(activityOid).subscribe(
+      (result) => {
+        this.activity = result;
+        this.prizeInfo = orderBy(result.info, 'prize', 'desc');
+        this.candidateList = result.randomList.split(',');
+        if (this.prizeInfo.length > 0) {
+          this.minPrize = _.minBy(this.prizeInfo, function(prize) {
+            return prize['prize'];
+          })['prize'];
+        } else {
+          this.minPrize = this.activity.prizeCount;
+        }
+        this.isCanBeAdded = this.prizeInfo.length < this.activity.prizeCount;
+      },
+      (error) => {
         if (error.status == 400) {
           this.modal.error({
             nzTitle: '<i>Error</i>',
             nzContent: '<b>Empty record, please change the query criteria.</b>',
-            nzOnCancel: () => console.log('Close')
-          })
+            nzOnCancel: () => console.log('Close'),
+          });
         }
-    });
+      }
+    );
   }
 
+  // add to ReadMe -> PPT / image
   draw(data: Activity['info']) {
-    data['list'] = this.candidateList.slice(0, data['quota']);
-    this.candidateList = this.candidateList.slice(data['quota'] + 1);
+    const lastIndex = this.activity.usersCount;
+    const startIndex = Number(this.activity.currentIndex) + 1;
+    const endIndex =
+      startIndex + data['quota'] <= lastIndex
+        ? startIndex + data['quota']
+        : lastIndex;
+    data['list'] = this.candidateList.slice(startIndex, endIndex);
     this.saveList(data);
   }
 
   saveList(data: Activity['info']) {
     this.lotteryService
-      .savePrizeEmpls(this.activity.activityOid, data['prizeOid'], data['list'])
+      .savePrizeEmpls(
+        this.activity.activityOid,
+        data['prizeOid'],
+        data['list'],
+        data['quota']
+      )
       .subscribe((result) => {
-        console.log('post result', result);
+        this.refresh();
+        this.drawCompleteMessage(result);
+      });
+  }
+
+  refresh() {
+    this.lotteryService
+      .getActivity(this.activity.activityOid)
+      .subscribe((result) => {
+        this.prizeInfo = orderBy(result.info, 'prize', 'desc');
+        this.activity.currentIndex = result.currentIndex;
+        if (this.prizeInfo.length > 0) {
+          this.minPrize = _.minBy(this.prizeInfo, function(prize) {
+            return prize['prize'];
+          })['prize'];
+        } else {
+          this.minPrize = this.activity.prizeCount;
+        }
+        this.currentPrize = this.minPrize - 1;
       });
   }
 
@@ -90,29 +154,87 @@ export class AppComponent implements OnInit {
     this.isVisible = false;
   }
 
+  createBasicMessage(): void {
+    this.nzMessageService.success('Create successfully.');
+  }
+
+  drawCompleteMessage(result) {
+    this.nzMessageService.info(`Completely`);
+  }
+
   createActivity() {
     this.lotteryService
       .createActivity(
-        this.validateForm.get('name').value,
-        this.validateForm.get('year').value,
-        this.validateForm.get('month').value,
-        this.validateForm.get('day').value,
-        this.validateForm.get('usersCount').value,
-        this.validateForm.get('prizeCount').value
+        this.newActivityForm.get('name').value,
+        this.newActivityForm.get('usersCount').value,
+        this.newActivityForm.get('prizeCount').value
       )
-      .subscribe((result) => {
+      .subscribe(
+        (result) => {
+          this.getActivityList();
+          this.newActivityId.setValue(result['oid']);
+          this.newActivityForm.reset();
+          this.isVisible = false;
+          this.createBasicMessage();
+        },
+        (error) => {
+          if (error.status === 403) {
+            this.modal.error({
+              nzTitle: '<i>Error</i>',
+              nzContent:
+                '<b>Prize count and users count both cannot smaller than 1.</b>',
+              nzOnCancel: () => console.log('Close'),
+            });
+          }
 
-        this.newActivityId.setValue(result['oid']);
-        console.log('result.activityOid', result['oid']);
-        console.log('this.newActivityId', this.newActivityId.value);
-      });
+          if (error.status === 400) {
+            this.modal.error({
+              nzTitle: '<i>Error</i>',
+              nzContent:
+                '<b>Already has the same activity name, please change name.</b>',
+              nzOnCancel: () => console.log('Close'),
+            });
+          }
+        }
+
+      );
+  }
+
+
+  showAddItem(): void {
+    this.isOpenAddedItem = true;
+    this.prizeForm.get('quota').reset();
+
+    if (this.minPrize === this.activity.prizeCount) {
+      this.currentPrize = this.activity.prizeCount;
+    } else {
+      this.currentPrize = this.minPrize -1;
+    }
+    this.prizeForm.get('prize').setValue(this.currentPrize);
+    this.modal.create({
+      nzTitle: `新增${this.activity.name}獎項`,
+      nzContent: this.prizeTmpl,
+      nzFooter: null,
+    });
+
   }
 
   createPrizeInfo() {
     this.lotteryService
-      .createPrizeInfo(this.newActivityId.value, this.prize.value, this.quota.value)
+      .createPrizeInfo(
+        this.activity.activityOid,
+        this.prizeForm.get('prize').value,
+        this.prizeForm.get('quota').value
+      )
       .subscribe((result) => {
-        console.log('prize info', result);
+        this.createBasicMessage();
+        this.refresh();
+        let prize =  this.currentPrize -1;
+        if (prize === 0) {
+            prize = prize + 1;
+        }
+        this.prizeForm.get('prize').setValue(prize);
+        this.prizeForm.get('quota').reset();
       });
   }
 }

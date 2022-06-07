@@ -1,8 +1,10 @@
 # LotteryApp
 GUI抽獎連結: https://ddf8-61-230-75-173.jp.ngrok.io/
 
+
 抽籤方法-採用Fisher–Yates shuffle algorithm，說明可點選下方連結Repo
 https://github.com/gn01735570/lotteryRestApi/blob/main/README.md
+
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.2.3.
 1. 抽籤頁面: (點擊 - 開始抽籤按鈕，即可抽出該獎項以及顯示中獎人名單，每一次抽獎時間 < 2秒)

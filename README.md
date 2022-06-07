@@ -8,11 +8,11 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 ![image](https://user-images.githubusercontent.com/72732535/172468734-fcaaadcb-e107-4843-94ab-984cf25dc3bc.png)
 
 
-2. 查詢每次抽獎活動，獎項和人員名單 (輸入對應查詢活動名稱，活動時間，按下查詢按鈕，即可顯示此次活動，各獎項中獎名單，以及總獎項和總參加人數)
+2. 點選下拉選單查詢每次抽獎活動，獎項和人員名單
 ![image](https://user-images.githubusercontent.com/72732535/172468834-b8c51da4-38ff-44ae-8aaa-bc6b7442e22f.png)
 
 
-3. 建立新抽獎活動，可以設定活動名稱、時間、參與人員，獎項數，對應的人數
+3. 建立新抽獎活動，可以設定活動名稱、參與總人數，各獎項數，和對應的人數
 ![image](https://user-images.githubusercontent.com/72732535/172468898-75ba76c5-5c79-41eb-8d72-78288e3d2351.png)
 ![image](https://user-images.githubusercontent.com/72732535/172468950-5c994544-2478-4a7e-b55c-8f7b79ebdc4c.png)
 

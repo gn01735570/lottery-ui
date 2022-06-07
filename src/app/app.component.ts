@@ -10,7 +10,7 @@ import { orderBy } from 'lodash';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
-import { Subject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { range } from 'rxjs/internal/observable/range';
 import { LotteryServiceService } from './lottery-service.service';
 import { Activity } from './pages/activity';
@@ -32,6 +32,10 @@ export class AppComponent implements OnInit {
   isOpenAddedItem = false;
   minPrize:number;
   currentPrize: number;
+  isAbleClicked = true;
+  searchChange$ = new BehaviorSubject('');
+  isLoading = false;
+  isSpinning = false;
 
   newActivityForm!: FormGroup;
   prizeForm!: FormGroup;
@@ -47,6 +51,8 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.isLoading = true;
+    this.isSpinning = true;
     this.getActivityList();
     this.addActivityCtrlListener();
     this.newActivityForm = this.fb.group({
@@ -63,6 +69,7 @@ export class AppComponent implements OnInit {
 
   addActivityCtrlListener() {
     this.selectedActivity.valueChanges.subscribe((result) => {
+      this.isSpinning = true;
       this.getActivity(result);
     });
   }
@@ -70,6 +77,8 @@ export class AppComponent implements OnInit {
   getActivityList() {
     this.lotteryService.getActivityList().subscribe((result) => {
       this.activityList = result;
+      this.isSpinning = false;
+      this.isLoading = false;
       if (this.newActivityId.value !== '') {
         this.selectedActivity.setValue(this.newActivityId.value);
       }
@@ -80,6 +89,7 @@ export class AppComponent implements OnInit {
     this.lotteryService.getActivity(activityOid).subscribe(
       (result) => {
         this.activity = result;
+        this.isSpinning = false;
         this.prizeInfo = orderBy(result.info, 'prize', 'desc');
         this.candidateList = result.randomList.split(',');
         if (this.prizeInfo.length > 0) {
@@ -112,6 +122,7 @@ export class AppComponent implements OnInit {
         ? startIndex + data['quota']
         : lastIndex;
     data['list'] = this.candidateList.slice(startIndex, endIndex);
+    this.isAbleClicked = false;
     this.saveList(data);
   }
 
@@ -126,6 +137,7 @@ export class AppComponent implements OnInit {
       .subscribe((result) => {
         this.refresh();
         this.drawCompleteMessage(result);
+
       });
   }
 
@@ -135,6 +147,11 @@ export class AppComponent implements OnInit {
       .subscribe((result) => {
         this.prizeInfo = orderBy(result.info, 'prize', 'desc');
         this.activity.currentIndex = result.currentIndex;
+
+          setTimeout(()=> {
+            this.isAbleClicked = true;
+          }, 1000)
+
         if (this.prizeInfo.length > 0) {
           this.minPrize = _.minBy(this.prizeInfo, function(prize) {
             return prize['prize'];
@@ -159,7 +176,7 @@ export class AppComponent implements OnInit {
   }
 
   drawCompleteMessage(result) {
-    this.nzMessageService.info(`Completely`);
+    this.nzMessageService.info(`Lottery draw completely! Saving data ...`);
   }
 
   createActivity() {

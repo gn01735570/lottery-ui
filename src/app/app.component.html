@@ -1,3 +1,4 @@
+<nz-spin [nzSpinning]="isSpinning" [nzDelay]="500" nzTip="Loading...">
 <div style="margin: 10px">
   抽獎活動:
   <nz-select
@@ -7,12 +8,23 @@
     nzServerSearch
     [formControl]="selectedActivity"
   >
-    <ng-container *ngFor="let activity of this.activityList">
+  <div *ngIf="!isLoading">
+    <ng-container *ngFor="let activity of this.activityList" >
       <nz-option
         [nzValue]="activity.activityOid"
         [nzLabel]="activity.name"
       ></nz-option>
+
     </ng-container>
+  </div>
+
+    <ng-container *ngIf="isLoading">
+      <nz-option  nzDisabled nzCustomContent>
+        <i nz-icon nzType="loading" class="loading-icon"></i>
+        Loading Data...
+      </nz-option>
+    </ng-container>
+
   </nz-select>
   <label style="margin: 0px 20px"> 總獎項: {{ activity?.prizeCount }} </label>
   <label style="margin: 0px 20px"> 參加人數: {{ activity?.usersCount }} </label>
@@ -52,8 +64,10 @@
         <td>{{ data.prize }}</td>
         <td>{{ data.quota }}</td>
         <td>
-          <span *ngIf="data.list === ''" (click)="draw(data)"
-            ><a>開始抽獎 </a></span
+          <span *ngIf="data.list === ''"
+            >
+            <button nz-button nzType="primary" (click)="draw(data)" [disabled]="!this.isAbleClicked" nzColor="success" disabled>開始抽獎</button>
+            </span
           >
         </td>
         <td>
@@ -116,7 +130,7 @@
     </div>
   </form>
 </ng-template>
-<!-- [disabled]="!this.prizeForm.valid && !isCanBeAdded" -->
+</nz-spin>
 
 
 

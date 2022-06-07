@@ -7,7 +7,8 @@ import { Activity } from './pages/activity';
   providedIn: 'root'
 })
 export class LotteryServiceService {
-  lotteryService = 'http://localhost:8080/api/v1';
+  //lotteryService = 'http://localhost:8080/api/v1';
+  lotteryService = 'https://de20-61-230-75-173.jp.ngrok.io/api/v1';
 
   constructor(private http: HttpClient) { }
 

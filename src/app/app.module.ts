@@ -18,6 +18,8 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzMessageModule } from 'ng-zorro-antd/message';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+
 
 registerLocaleData(zh);
 
@@ -40,6 +42,7 @@ registerLocaleData(zh);
     NzTableModule,
     NzSelectModule,
     NzMessageModule,
+    NzSpinModule
   ],
   providers: [{ provide: NZ_I18N, useValue: zh_TW }],
   bootstrap: [AppComponent]

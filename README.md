@@ -1,5 +1,7 @@
 # LotteryApp
-GUI抽獎連結: https://ddf8-61-230-75-173.jp.ngrok.io/
+GUI抽獎連結: 
+1. https://lottery-app-352819.de.r.appspot.com
+2. https://ddf8-61-230-75-173.jp.ngrok.io/
 
 
 抽籤方法-採用Fisher–Yates shuffle algorithm，說明可點選下方連結Repo

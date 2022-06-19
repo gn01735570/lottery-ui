@@ -1,8 +1,9 @@
 # LotteryApp
-GUI抽獎連結: (Avoid company block URL, build 3 link.~ )
-1. https://lottery-app-352819.de.r.appspot.com (Deploy on google cloud platform)
+GUI抽獎連結: (To avoid company block URL, build 4 link.~ )
+1. https://front-end-70121.de.r.appspot.com/ (Deploy on google cloud platform)
 2. https://ui-3168.de.r.appspot.com/ (Deploy on google cloud platform)
-3.  https://d7ab-1-34-231-129.jp.ngrok.io - (Deploy on ngrok)
+3. https://d7ab-1-34-231-129.jp.ngrok.io - (Deploy on ngrok)
+4. https://lottery-app-352819.de.r.appspot.com (Deploy on google cloud platform)
 
 
 
